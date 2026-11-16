@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Bán hàng">
-<meta name="theme-color" content="#E8731A">
+<meta name="apple-mobile-web-app-title" content="Sâmila">
+<meta name="theme-color" content="#1E4D3A">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1317,7 +1317,7 @@ async function refresh(force) {                  // sau mỗi lần lưu: lấy 
 }
 $('syncBtn').addEventListener('click', async () => {
   const b = $('syncBtn'); b.disabled = true; b.textContent = 'Đang tải…';
-  showMsg(null); dirty(); await flush(true); await refresh(true);
+  showMsg(null); dirty(); await flush(true); await refresh(true); if (MODE === 'banhang') await loadOrders(true);
   b.disabled = false; b.textContent = 'Tải lại';
 });
 
@@ -1694,7 +1694,7 @@ function renderOrders() {
   const shown = list.filter(ORD_FILTERS.find(x => x[0] === ORD.filter)[2]);
   if (ORD.list && !shown.length) kids.push(h('div', { class: 'blank' }, ORD.filter === 'new' ? 'Chưa có đơn mới.' : 'Không có đơn nào.'));
   shown.forEach(o => kids.push(orderCard(o)));
-  kids.push(h('div', { class: 'small', style: 'text-align:center;margin-top:16px;color:var(--muted);font-size:13px' }, ORD.at ? 'Cập nhật lúc ' + ordTime(ORD.at) + ', tự tải lại mỗi phút' : ''));
+  kids.push(h('div', { class: 'small', style: 'text-align:center;margin-top:16px;color:var(--muted);font-size:13px' }, ORD.at ? 'Cập nhật lúc ' + ordTime(ORD.at) + ', tự tải lại mỗi 10 giây' : ''));
   box.replaceChildren(...kids);
   if (ORD.focus) { const el = document.getElementById('o-' + ORD.focus); if (el) el.scrollIntoView({ block: 'center' }); ORD.focus = null; }
 }
@@ -1825,7 +1825,7 @@ async function ratingShowDo(x) {
   } catch (e) { delete FB.busy[x.code]; showMsg('err', 'Mất kết nối. Chưa gửi được, thử lại.'); renderOrders(); toTop(); }
 }
 // Tự tải lại đơn mỗi phút khi app đang mở; mở lại app cũng tải ngay.
-setInterval(() => { if (MODE === 'banhang' && S.data && document.visibilityState === 'visible') loadOrders(true); }, 60000);
+setInterval(() => { if (MODE === 'banhang' && S.data && document.visibilityState === 'visible' && (S.tab === 'order' || Date.now() - ORD.at > 55000)) loadOrders(true); }, 10000);
 document.addEventListener('visibilitychange', () => { if (MODE === 'banhang' && S.data && document.visibilityState === 'visible' && Date.now() - ORD.at > 20000) loadOrders(true); });
 (() => { const q = new URLSearchParams(location.search).get('don'); if (q) { S.tab = 'order'; ORD.focus = q.toUpperCase(); history.replaceState(null, '', location.pathname); } })();
 
